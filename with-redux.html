@@ -1,0 +1,84 @@
+<html>
+  <body>
+    <style>
+      .container {
+        border: 5px solid black;
+        padding: 10px;
+      }
+    </style>
+    <div id="red"></div>
+    <div id="green"></div>
+    <div id="blue"></div>
+    <script src="https://unpkg.com/redux@latest/dist/redux.min.js"></script>
+    <script>
+      function reducer(state, action) {
+        console.log(state, action.color);
+
+        //reducer의 state값이 undefined라면?
+        //초기화를 위해서 최초로 실행되는 reducer의 호출이기 때문에
+        //원하는 값을 return 해주면 초기값이 세팅된다.
+        if (state === undefined) {
+          return { color: "yellow" };
+        }
+        let newState;
+        if (action.type === "CHANGE_COLOR") {
+          //state에다가 갑을 변경하지 말고
+          //새로운 state를 만들고 기존 state와 변경된 값을 복사해서 넘겨주자.
+          newState = Object.assign({}, state, { color: action.color });
+        }
+        return newState;
+      }
+
+      let store = Redux.createStore(reducer);
+
+      function red() {
+        let state = store.getState();
+        //store.dispatch를 호출한다.
+        //가장 중요한 property는 type!
+        //dispatch는 reducer를 호출하도록 약속되어있다.
+        document.querySelector("#red").innerHTML = `
+    <div class="container" id="component_red" style="background-color:${state.color}">
+        <h1>red</h1>
+        <input type="button" value="fire" onclick="
+        store.dispatch({type:'CHANGE_COLOR', color:'red'  });
+
+        ">
+    </div>
+`;
+      }
+
+      function green() {
+        let state = store.getState();
+        document.querySelector("#green").innerHTML = `
+    <div class="container" id="component_green" style="background-color:${state.color}">
+        <h1>green</h1>
+        <input type="button" value="fire" onclick="
+        store.dispatch({type:'CHANGE_COLOR', color:'green'  });
+
+        ">
+    </div>
+`;
+      }
+
+      function blue() {
+        let state = store.getState();
+        document.querySelector("#blue").innerHTML = `
+    <div class="container" id="component_blue" style="background-color:${state.color}">
+        <h1>blue</h1>
+        <input type="button" value="fire" onclick="
+        store.dispatch({type:'CHANGE_COLOR', color:'blue'  });
+
+        ">
+    </div>
+`;
+      }
+
+      store.subscribe(red);
+      store.subscribe(green);
+      store.subscribe(blue);
+      red();
+      green();
+      blue();
+    </script>
+  </body>
+</html>
