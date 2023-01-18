@@ -1,32 +1,35 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <script src="https://unpkg.com/redux@latest/dist/redux.min.js"></script>
-  </head>
-  <body>
-    <div id="subject"></div>
-    <div id="toc"></div>
-    <div id="control"></div>
-    <div id="article"></div>
 
-    <script>
-      function subject() {
-        document.querySelector("#subject").innerHTML = `
+<head>
+  <script src="https://unpkg.com/redux@latest/dist/redux.min.js"></script>
+</head>
+
+<body>
+  <div id="subject"></div>
+  <div id="toc"></div>
+  <div id="control"></div>
+  <div id="article"></div>
+
+  <script>
+    function subject() {
+      document.querySelector("#subject").innerHTML = `
       <header>
       <h1>WEB</h1>
       Hello, WEB!
       </header>
       `;
-      }
+    }
 
-      //Topic Of Content
-      function TOC(state) {
-        let i = 0;
-        let liTags = "";
-        while (i < state.contents.length) {
-          liTags =
-            liTags +
-            `
+    //Topic Of Content
+    function TOC() {
+      let state = store.getState();
+      let i = 0;
+      let liTags = "";
+      while (i < state.contents.length) {
+        liTags =
+          liTags +
+          `
             <li>
                 <a onclick="
                     event.preventDefault();
@@ -35,58 +38,73 @@
                 " href="${state.contents[i].id}">${state.contents[i].title}
                 </a>
             </li>`;
-          i = i + 1;
-        }
-        document.querySelector("#toc").innerHTML = `
+        i = i + 1;
+      }
+      document.querySelector("#toc").innerHTML = `
           <nav>
               <ol>
                   ${liTags}
               </ol>
           </nav>
               `;
-      }
+    }
 
-      function control() {
-        document.querySelector("#control ").innerHTML = `
+    function control() {
+      document.querySelector("#control ").innerHTML = `
           <ul>
               <li><a href="/create">create</a></li>
               <li><input type="button" value="delete" /></li>
           </ul>
               `;
+    }
+
+    function article() {
+      let state = store.getState();
+      let i = 0;
+      let aTitle, aDesc;
+      while (i < state.contents.length) {
+        if (state.contents[i].id === state.selected_id) {
+          aTitle = state.contents[i].title;
+          aDesc = state.contents[i].desc;
+          break;
+        }
+        i = i + 1;
       }
 
-      function article() {
-        document.querySelector("#article ").innerHTML = `
+      document.querySelector("#article ").innerHTML = `
           <article>
-              <h2>HTML</h2>
-              HTML is ...
+              <h2>${aTitle}</h2>
+              ${aDesc}
           </article>
               `;
-      }
+    }
 
-      function reducer(state, action) {
-        if (state === undefined) {
-          return {
-            selected_id: null,
-            contents: [
-              { id: 1, title: "HTML", desc: "HTML is ..." },
-              { id: 2, title: "CSS", desc: "CSS is ..." },
-            ],
-          };
-        }
-        let newState = {};
-        if (action.type === "SELECT") {
-          Object.assign(newState, state, { selected_id: action.id });
-        }
-        console.log(action, state, newState);
-        return newState;
+    function reducer(state, action) {
+      if (state === undefined) {
+        return {
+          selected_id: 1,
+          contents: [
+            { id: 1, title: "HTML", desc: "HTML is ..." },
+            { id: 2, title: "CSS", desc: "CSS is ..." },
+          ],
+        };
       }
-      let store = Redux.createStore(reducer);
-      let state = store.getState();
-      subject();
-      TOC(state);
-      control();
-      article();
-    </script>
-  </body>
+      let newState = {};
+      if (action.type === "SELECT") {
+        Object.assign(newState, state, { selected_id: action.id });
+      }
+      console.log(action, state, newState);
+      return newState;
+    }
+    let store = Redux.createStore(reducer);
+
+    subject();
+    TOC();
+    control();
+    article();
+
+    store.subscribe(article, TOC);
+  </script>
+</body>
+
 </html>
