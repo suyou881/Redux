@@ -52,7 +52,10 @@
     function control() {
       document.querySelector("#control ").innerHTML = `
           <ul>
-              <li><a href="/create">create</a></li>
+              <li><a onclick="
+                event.preventDefault();
+                
+                " href="/create">create</a></li>
               <li><input type="button" value="delete" /></li>
           </ul>
               `;
@@ -60,28 +63,58 @@
 
     function article() {
       let state = store.getState();
-      let i = 0;
-      let aTitle, aDesc;
-      while (i < state.contents.length) {
-        if (state.contents[i].id === state.selected_id) {
-          aTitle = state.contents[i].title;
-          aDesc = state.contents[i].desc;
-          break;
-        }
-        i = i + 1;
-      }
 
-      document.querySelector("#article ").innerHTML = `
+      if (state.mode === 'create') {
+        document.querySelector("#article ").innerHTML = `
+          <article>
+              <form onsubmit="
+                event.preventDefault();
+                let _title = this.title.value;
+                let _desc = this.desc.value;
+                store.dispatch({
+                  type:'CREATE',
+                  title:_title,
+                  desc:_desc
+                })
+              ">
+                <p>
+                  <input type="text" name="title" placeholder="title">
+                </p>
+                <p>
+                  <textarea name="desc" placeholder="description"></textarea>
+                </p>
+                <p>
+                  <input type="submit">
+                </p> 
+              
+          </article>
+              `;
+      } else if (state.mode === 'read') {
+        let i = 0;
+        let aTitle, aDesc;
+        while (i < state.contents.length) {
+          if (state.contents[i].id === state.selected_id) {
+            aTitle = state.contents[i].title;
+            aDesc = state.contents[i].desc;
+            break;
+          }
+          i = i + 1;
+        }
+        document.querySelector("#article ").innerHTML = `
           <article>
               <h2>${aTitle}</h2>
               ${aDesc}
           </article>
               `;
+      }
+
     }
 
     function reducer(state, action) {
       if (state === undefined) {
         return {
+          mode: 'create',
+          max_id: 2,
           selected_id: 1,
           contents: [
             { id: 1, title: "HTML", desc: "HTML is ..." },
@@ -92,6 +125,13 @@
       let newState = {};
       if (action.type === "SELECT") {
         Object.assign(newState, state, { selected_id: action.id });
+      } else if (action.type === "CREATE") {
+
+        let newMaxId = state.max_id + 1;
+        //배열을 복사해서 새로운 배열 생성
+        let newContents = state.contents.concat();
+        newContents.push({ id: newMaxId, title: action.title, desc: action.desc })
+        newState = Object.assign(newState, state, { max_id: newMaxId, contents: newContents, mode: 'read' });
       }
       console.log(action, state, newState);
       return newState;
@@ -103,7 +143,8 @@
     control();
     article();
 
-    store.subscribe(article, TOC);
+    store.subscribe(article);
+    store.subscribe(TOC);
   </script>
 </body>
 
