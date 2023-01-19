@@ -1,8 +1,9 @@
-<!DOCTYPE html>
 <html>
 
 <head>
-  <script src="https://unpkg.com/redux@latest/dist/redux.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/redux/4.2.0/redux.js"
+    integrity="sha512-8clKd0Zb9EeWqWE0gzlNxwWIjzYlYZ9cAsGcGM7gPsE+SKUxY6zZmLhrWqHMYQqbNCSwy21bn/TtA4zTQ+edag=="
+    crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 </head>
 
 <body>
@@ -10,85 +11,98 @@
   <div id="toc"></div>
   <div id="control"></div>
   <div id="article"></div>
-
   <script>
     function subject() {
-      document.querySelector("#subject").innerHTML = `
-      <header>
-      <h1>WEB</h1>
-      Hello, WEB!
-      </header>
-      `;
+      document.querySelector('#subject').innerHTML = `
+                <header>
+                    <h1>WEB</h1>
+                    Hello, WEB!
+                </header>
+                `
     }
-
-    //Topic Of Content
     function TOC() {
       let state = store.getState();
       let i = 0;
-      let liTags = "";
+      let liTags = '';
+      // 아래 store.dispatch(action); 은 store가 reducer를 호출하게 한다.
       while (i < state.contents.length) {
-        liTags =
-          liTags +
-          `
-            <li>
-                <a onclick="
-                    event.preventDefault();
-                    let action = {type:'SELECT', id:${state.contents[i].id}}
-                    store.dispatch(action);
-                " href="${state.contents[i].id}">${state.contents[i].title}
-                </a>
-            </li>`;
+        liTags = liTags + `
+                    <li>
+                        <a onclick="
+                            event.preventDefault();
+                            let action = {type:'SELECT', id:${state.contents[i].id}}
+                            
+                            store.dispatch(action);
+                        " 
+                        href="${state.contents[i].id}">
+                            ${state.contents[i].title}
+                        </a>
+                    </li>
+                    `;
         i = i + 1;
       }
-      document.querySelector("#toc").innerHTML = `
-          <nav>
-              <ol>
-                  ${liTags}
-              </ol>
-          </nav>
-              `;
+      document.querySelector('#toc').innerHTML = `
+                <nav>
+                    <ol>
+                        ${liTags}
+                    </ol>
+                </nav>
+                `
     }
-
     function control() {
-      document.querySelector("#control ").innerHTML = `
-          <ul>
-              <li><a onclick="
-                event.preventDefault();
-                
-                " href="/create">create</a></li>
-              <li><input type="button" value="delete" /></li>
-          </ul>
-              `;
+      document.querySelector('#control').innerHTML = `
+                <ul>
+                    <li><a onclick="
+                            event.preventDefault();
+                            store.dispatch({
+                                type:'CHANGE_MODE',
+                                mode:'create'
+                            });
+                        "
+                        href="/create">create</a></li>
+                    <li><input onclick="
+                        store.dispatch({
+                            type:'DELETE'
+                        });
+                        "
+                        type="button" value="delete"></li>
+                    <li><input onclick="
+                        store.dispatch({
+                            type:'EDIT',
+                            mode:'update'
+                        });
+                    "
+                    type="button" value="update"></li>
+                </ul>
+                `;
     }
-
     function article() {
       let state = store.getState();
-
       if (state.mode === 'create') {
-        document.querySelector("#article ").innerHTML = `
-          <article>
-              <form onsubmit="
-                event.preventDefault();
-                let _title = this.title.value;
-                let _desc = this.desc.value;
-                store.dispatch({
-                  type:'CREATE',
-                  title:_title,
-                  desc:_desc
-                })
-              ">
-                <p>
-                  <input type="text" name="title" placeholder="title">
-                </p>
-                <p>
-                  <textarea name="desc" placeholder="description"></textarea>
-                </p>
-                <p>
-                  <input type="submit">
-                </p> 
-              
-          </article>
-              `;
+        document.querySelector('#article').innerHTML = `
+                    <article>
+                        <form onsubmit="
+                            event.preventDefault();
+                            let _title = this.title.value;
+                            let _desc = this.desc.value;
+                            store.dispatch({
+                                type:'CREATE',
+                                title:_title,
+                                desc:_desc
+                            })
+                        ">
+                            <p>
+                                <input type="text" name="title" placeholder="title">
+                            </p>
+                            <p>
+                                <textarea name="desc" placeholder="description"></textarea>
+                            </p>
+                            <p>
+                                <input type="submit" >
+                            </p>
+                        </form>
+                    </article>
+                    `
       } else if (state.mode === 'read') {
         let i = 0;
         let aTitle, aDesc;
@@ -100,52 +114,165 @@
           }
           i = i + 1;
         }
-        document.querySelector("#article ").innerHTML = `
-          <article>
-              <h2>${aTitle}</h2>
-              ${aDesc}
-          </article>
-              `;
+        document.querySelector('#article').innerHTML = `
+                    <article>
+                        <h2>${aTitle}</h2>
+                        ${aDesc}
+                    </article>
+                    `
+      } else if (state.mode === 'welcome') {
+
+        document.querySelector('#article').innerHTML = `
+                    <article>
+                        <h2>Welcome</h2>
+                        Hello, Redux!!
+                    </article>
+                    `
+      } else if (state.mode === 'update') {
+        console.log('article => update');
+        let i = 0;
+        let aTitle, aDesc;
+        while (i < state.contents.length) {
+          if (state.contents[i].id === state.selected_id) {
+            aTitle = state.contents[i].title;
+            aDesc = state.contents[i].desc;
+            break;
+          }
+          i = i + 1;
+        }
+        document.querySelector('#article').innerHTML = `
+                    <article>
+                        <form onsubmit=" 
+                            event.preventDefault();
+                            
+                            let _title = this.title.value;
+                            let _desc = this.desc.value;
+                            store.dispatch({
+                                id:${state.selected_id},
+                                type:'UPDATE',
+                                title:_title,
+                                desc:_desc
+                            });
+                        ">
+                            <p>
+                                <input type="text" name="title" placeholder="title" value="${aTitle}">
+                            </p>
+                            <p>
+                                <textarea name="desc" placeholder="description">${aDesc}</textarea>
+                            </p>
+                            <p>
+                                <input type="submit" >
+                            </p>
+                        </form>
+                    </article>
+                    `
       }
-
+      // document.querySelector('#article').innerHTML=`
+      //     <article>
+      //         <h2>${aTitle}</h2>
+      //         ${aDesc}
+      //     </article>
+      //     `
     }
-
+    //리덕스를 사용하기 위해서는 먼저 store를 만들어야 한다.
+    //store를 만들 때 반드시 필요한 것은 reducer가 필요하다.
+    //reducer는 인자값으로 이전 state를 받고 action을 받는다.
+    //return 값은 새로운 state값이 된다.
+    //store를 처음 생성하게 되면 action 과는 상관없이 호출이 되는데
+    //그때 state 값이 undefined인데 그 때는 초기값을 설정해 줄 수 있다.
     function reducer(state, action) {
       if (state === undefined) {
         return {
-          mode: 'create',
           max_id: 2,
+          mode: 'read',
           selected_id: 1,
           contents: [
-            { id: 1, title: "HTML", desc: "HTML is ..." },
-            { id: 2, title: "CSS", desc: "CSS is ..." },
-          ],
-        };
+            { id: 1, title: 'HTML', desc: 'HTML is ..' },
+            { id: 2, title: 'CSS', desc: 'CSS is ..' }
+          ]
+        }
       }
       let newState = {};
-      if (action.type === "SELECT") {
-        Object.assign(newState, state, { selected_id: action.id });
-      } else if (action.type === "CREATE") {
-
+      let newContents = [];
+      if (action.type === 'SELECT') {
+        Object.assign(newState, state, { selected_id: action.id, mode: 'read' });
+      } else if (action.type === 'CREATE') {
+        //배열을 복제할 때는 concat()을 사용하면 편하다.
+        //똑같은 배열을 리턴값으로 줌
         let newMaxId = state.max_id + 1;
         //배열을 복사해서 새로운 배열 생성
-        let newContents = state.contents.concat();
-        newContents.push({ id: newMaxId, title: action.title, desc: action.desc })
-        newState = Object.assign(newState, state, { max_id: newMaxId, contents: newContents, mode: 'read' });
+        newContents = state.contents.concat();
+        console.log(action);
+        newContents.push({ id: newMaxId, title: action.title, desc: action.desc });
+        Object.assign(newState, state, {
+          max_id: newMaxId,
+          contents: newContents,
+          mode: 'read'
+        })
+      } else if (action.type === 'DELETE') {
+        console.log('reducer delete');
+        let newContents = [];
+        let i = 0;
+        while (i < state.contents.length) {
+          if (state.selected_id !== state.contents[i].id) {
+            newContents.push(
+              state.contents[i]
+            );
+          }
+          i = i + 1;
+        }
+        newState = Object.assign({}, state, {
+          contents: newContents,
+          mode: 'welcome'
+        })
+      } else if (action.type === 'CHANGE_MODE') {
+        newState = Object.assign({}, state, {
+          mode: action.mode
+        })
+      } else if (action.type === 'EDIT') {
+        console.log("action type =>", action.mode);
+        newState = Object.assign({}, state, {
+          mode: action.mode
+        })
       }
+      //////////////////////////여기 업데이트가 아닐라 create 이 된다...
+      else if (action.type === 'UPDATE') {
+        console.log("reducer => ", action.type)
+        newContents = state.contents.concat();
+        newContents.forEach(e => {
+          if (e.id === action.id) {
+            e.title = action.title;
+            e.desc = action.desc;
+          }
+        });;
+        Object.assign(newState, state, {
+          contents: newContents,
+          mode: 'read',
+          selected_id: action.id
+        })
+      }
+
       console.log(action, state, newState);
       return newState;
     }
-    let store = Redux.createStore(reducer);
 
+
+    //전역변수에 store를 저장
+    //createStore에서 reducer를 변수로 할당한다.
+    let store = Redux.createStore(reducer);
     subject();
     TOC();
     control();
     article();
-
+    //article이 state 값에 따라서 본문을 잘 표현하게 해보자.
+    //state 값이 바꼈을 때 자동으로 article을 호출해보자.
     store.subscribe(article);
     store.subscribe(TOC);
+
   </script>
+
+
+
 </body>
 
 </html>
